@@ -20,3 +20,13 @@ Number.prototype.toVideoTime = function(){
     
     return `${hour}:${min}:${sec}:${ms}`;
 }
+
+Date.prototype.today = function(){
+    let year = String(this.getFullYear()).substr(-2);
+    let month = this.getMonth() + 1;
+    month = month < 10 ? "0" + month : month;
+    let date = this.getDate();
+    date = date < 10 ? "0" + date : date;
+
+    return year + month + date;
+};

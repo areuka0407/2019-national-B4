@@ -1,0 +1,40 @@
+<style>
+    #viewport {
+        width: 1440px;
+        height: 600px;
+        background-color: #000;
+        position: relative;
+    }
+    #viewport video, #viewport img {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        user-select: none;
+        pointer-events: none;
+        visibility: visible;
+    }
+</style>
+<div id="viewport">
+    <video src="videos/movie1.mp4"></video>
+</div>
+<script>
+    window.onload = () => {
+        let $vidoe = document.querySelector("#viewport .video");
+        let $images = document.querySelectorAll("#viewport img");
+
+        function render(){
+            $images.forEach(img => {
+                let currentTime = $video.currentTime;
+                let start = img.dataset.start * 1;
+                let duration = img.dataset.duration * 1;
+
+                if(start <= currentTime && currentTime <= start + duration) img.style.visibility = "visible";
+                else img.style.visibility = "hidden";
+            });
+
+            requestAnimationFrame(render);
+        }
+        render();
+    };
+</script>

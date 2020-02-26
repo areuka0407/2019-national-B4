@@ -37,11 +37,11 @@ class Rect extends Clip {
     }
 
 
-    draw(ctx){
+    draw(ctx, selected){
         let {x, y, w, h} = this.data;
 
         // 선택시 보여지는 테두리
-        if(this.selected){
+        if(selected){
             ctx.save();
             ctx.lineWidth = 5;
             ctx.fillStyle = this.selectedColor;
@@ -55,5 +55,11 @@ class Rect extends Clip {
 
         if(this.complete) ctx.fillRect(x, y, w, h);
         else ctx.strokeRect(x, y, w, h);
+    }
+
+    reposition(){
+        this.data.x += this.x;
+        this.data.y += this.y;
+        this.x = this.y = 0;
     }
 }

@@ -46,6 +46,9 @@ class App {
         selector("#btn-pause").addEventListener("click", () => buttonEvent() && this.viewport.pause());
         selector("#btn-seldel").addEventListener("click", () => buttonEvent() && this.viewport.currentTrack.seldel());
         selector("#btn-alldel").addEventListener("click", () => buttonEvent() && this.viewport.currentTrack.alldel());
+        selector("#btn-download").addEventListener("click", () => buttonEvent() && this.download());
+        selector("#btn-reset").addEventListener("click", () => buttonEvent() && location.reload());
+        selector("#btn-merge").addEventListener("click", () => buttonEvent() && this.viewport.currentTrack.merge());
         selectorAll("#button-bar .tool").forEach(x => {
             x.addEventListener("click", () => {
                 if(!buttonEvent()) return;
@@ -53,6 +56,92 @@ class App {
                 x.classList.add("active");
             });        
         });
+    }
+
+    download(){
+        let html = this.outerHTML();
+        log(html);
+        let blob = new Blob([html], {type: "text/html"});
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement("a");
+        let date = new Date();
+        a.href = url;
+        a.download = "movie-" + date.today() + ".html";
+        document.body.append(a);
+        a.click();
+        a.remove();
+    }
+    
+    outerHTML(){
+        let output   = `<style>
+                            #viewport {
+                                max-width: 1000px;
+                                height: 600px;
+                                background-color: #000;
+                                position: relative;
+                            }
+                            #viewport video, #viewport img {
+                                position: absolute;
+                                left: 0;
+                                top: 0;
+                                width: 100%;
+                                height: 100%;
+                                user-select: none;
+                                pointer-events: none;
+                                visibility: visible;
+                            }
+                            #btn-play {
+                                position: absolute;
+                                left: 50%;
+                                top: 50%;
+                                transform: translate(-50%, -50%);
+                                background: none;
+                                border: none;
+                                color: #fff;
+                                font-size: 1.5em;
+                                z-index: 100;
+                            }
+                        </style>
+                        <div id="viewport">
+                            <button id="btn-play">재생</button>`;
+        output += `<video src="${this.viewport.currentTrack.$video.src}"></video>`;
+        
+        let selected = this.viewport.currentTrack.clipList.find(x => x.selected);
+        this.viewport.currentTrack.clipList.forEach(clip => {
+            clip.blur();
+            clip.update();
+            let url = clip.$canvas.toDataURL("image/png");
+            output += `<img src="${url}" alt="clip-image" data-start="${clip.startTime}" data-duration="${clip.duration}">`;
+        });
+        selected && selected.focus();
+
+        output += `</div>
+                            <script>
+                                window.onload = () => {
+                                    let $video = document.querySelector("#viewport video");
+                                    let $images = document.querySelectorAll("#viewport img");
+                                    let $playBtn = document.querySelector("#btn-play");
+                                    $playBtn.addEventListener("click", () => {
+                                        $video.play();
+                                        $playBtn.remove();
+                                    });
+                            
+                                    function render(){
+                                        $images.forEach(img => {
+                                            let currentTime = $video.currentTime;
+                                            let start = img.dataset.start * 1;
+                                            let duration = img.dataset.duration * 1;
+                            
+                                            if(start <= currentTime && currentTime <= start + duration) img.style.visibility = "visible";
+                                            else img.style.visibility = "hidden";
+                                        });
+                            
+                                        requestAnimationFrame(render);
+                                    }
+                                    render();
+                                };
+                            </script>`;
+        return output;
     }
 }
 

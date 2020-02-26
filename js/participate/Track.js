@@ -75,13 +75,14 @@ class Track {
     // Viewport 에서 보낸 이벤트 객체와 일치하는 대상을 찾아낸다.
     selectItem(e){
         this.clipList.forEach(x => x.blur());
-        let find = this.clipList.find(clip => {
+        let find = this.clipList.reverse().find(clip => {
                         let [X, Y] = clip.getXY(e);
                         clip.update();
 
                         let data = clip.ctx.getImageData(X - clip.x, Y - clip.y, 1, 1).data;
                         return data[3] !== 0;
                     });
+        this.clipList.reverse();
         find && find.focus();
         return find;
     }
@@ -104,5 +105,48 @@ class Track {
             x.$line.remove()
         });
         this.clipList = [];
+    }
+
+    // 클립을 병합시킨다.
+    merge(){
+        let _clipList = [], mergeList = [];
+        this.clipList.forEach(x => {
+            if(x.merged) {
+                mergeList.push(x);
+                x.merged = false;
+            }
+            else _clipList.push(x);
+        })
+        this.clipList = _clipList;
+
+        let startTime = mergeList.reduce((p, c) => Math.min(p, c.startTime), this.$video.duration);
+        let duration = mergeList.reduce((p, c) => Math.max(p, c.startTime + c.duration), 0);
+
+        let target = mergeList.shift();
+        mergeList.forEach(clip => {
+            clip.$line.remove();
+            clip.reposition();
+            target.drawList.push( (ctx, selected) => clip.draw.apply(clip, [ctx, selected]) );
+        });
+        target.startTime = startTime;
+        target.duration = duration;
+        target.$viewLine.style.left = 100 * startTime / this.$video.duration + "%";
+        target.$viewLine.style.width = 100 * duration / this.$video.duration + "%";
+        
+        target.focus();
+        this.clipList.push(target);
+    }
+
+    // dragItem 과 dropItem을 서로 바꾼다
+    swapClip(){
+        let dragIdx = this.clipList.findIndex(x => x === this.dragItem);
+        let dropIdx = this.clipList.findIndex(x => x === this.dropItem);
+        
+        this.clipList[dragIdx] = this.dropItem;
+        this.clipList[dropIdx] = this.dragItem;
+
+        let next = this.dropItem.$line.nextElementSibling;
+        this.$clipList.insertBefore(this.dropItem.$line, this.dragItem.$line);
+        this.$clipList.insertBefore(this.dragItem.$line, next);
     }
 }
