@@ -32,6 +32,7 @@ class Track {
         });
         window.addEventListener("mousemove", e => {
             if(!this.$cursor.clicked || e.which !== 1) return;
+            this.$video.pause();
         
             let {left} = $(this.$clipList).offset();
             let {offsetWidth} = this.$clipList;

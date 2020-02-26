@@ -101,6 +101,18 @@ class App {
                                 font-size: 1.5em;
                                 z-index: 100;
                             }
+                            #btn-play.active {
+                                opacity: 0;
+                                pointer-event: none;
+                                user-select: none;
+                                transition: 0.3s;
+                            }
+                            #viewport:hover #btn-play.active {
+                                opacity: 1;
+                                pointer-event: all;
+                                user-select: all;
+                                transition: 0.5s;
+                            }
                         </style>
                         <div id="viewport">
                             <button id="btn-play">재생</button>`;
@@ -122,8 +134,15 @@ class App {
                                     let $images = document.querySelectorAll("#viewport img");
                                     let $playBtn = document.querySelector("#btn-play");
                                     $playBtn.addEventListener("click", () => {
-                                        $video.play();
-                                        $playBtn.remove();
+                                        $playBtn.classList.add("active");
+                                        if($video.paused){
+                                            $video.play();
+                                            $playBtn.innerText = "일시정지";
+                                        }
+                                        else {
+                                            $video.pause();
+                                            $playBtn.innerText = "재생";
+                                        }
                                     });
                             
                                     function render(){
